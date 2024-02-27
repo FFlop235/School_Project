@@ -4,8 +4,13 @@ from config import TOKEN
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.types import InputFile 
 
 from DataBase import create_user_data, update_user_data, delete_user_data, select_user_data, select_id, save_changes
+from sup import CreateFile
+from sup import kb_subject
+
+from pathlib import Path
 
 import json
 import logging
@@ -21,15 +26,20 @@ class UserState(StatesGroup):
     login = State()
     password = State()
 
+class QuarterState(StatesGroup):
+    Quarter = State()
+
 btn_reg = InlineKeyboardButton('Зарегистрироватся', callback_data='reg')
 btn_continue = InlineKeyboardButton('Продолжить', callback_data='continue1')
 btn_yes = InlineKeyboardButton('Да', callback_data='yes')
 btn_no = InlineKeyboardButton('Нет', callback_data='no')
+btn_to_subject_list = InlineKeyboardButton('Предметы', callback_data="subject_list")
 
 kb_yes_or_no = InlineKeyboardMarkup().add(btn_yes).add(btn_no)
 kb_start = InlineKeyboardMarkup().add(btn_reg).add(btn_continue)
-kb_continue_to_main_menu = InlineKeyboardMarkup().add(btn_continue)
+kb_continue_to_main_menu = InlineKeyboardMarkup().add(btn_continue).add(btn_to_subject_list)
 kb_reg = InlineKeyboardMarkup().add(btn_reg)
+
 
 @dp.message_handler(commands=['start'])
 async def cmd_start(message: types.Message):
@@ -41,9 +51,14 @@ async def call_main_menu(call: types.CallbackQuery):
     user_id = call.from_user.id
     id_list = select_id()
     if str(user_id) in id_list:
-        await call.message.answer('Добрый день. Если хотите выстроить график нажмите кнопку "Продолжить" ниже.')
+        await call.message.answer('Добрый день. Если хотите выстроить график нажмите кнопку "Предметы" ниже.', reply_markup=kb_continue_to_main_menu)
     else:
         await call.message.answer('Извините, но вы не зарегестрированы. Нажмите на кнопку "Зарегистрироватся" ниже', reply_markup=kb_reg)
+
+@dp.callback_query_handler(text=['subject_list'])
+async def call_SubjectList(call: types.CallbackQuery):
+    await call.message.delete()
+    await call.message.answer("Выбирите предмет ниже: ", reply_markup=kb_subject)
 
 @dp.callback_query_handler(text=['reg'])
 async def call_continue(call: types.CallbackQuery):
@@ -69,9 +84,6 @@ async def get_password(message: types.Message, state: FSMContext):
     await message.answer(f"Логин: {data['login']}\n"
                          f"Пароль {data['password']}\n"
                          "Всё верно?", reply_markup=kb_yes_or_no)
-    
-    # create_user_data(message.from_user.id, str(data['login']), str(data['password']))
-    # save_changes()
 
     await state.reset_state(with_data=False)
 
@@ -91,8 +103,34 @@ async def call_yes(call: types.CallbackQuery, state: FSMContext):
 
     await state.finish()
 
+@dp.callback_query_handler(text='chemist')
+async def call_chemist(call: types.CallbackQuery, state: FSMContext):
+    await call.message.delete()
+    await call.message.answer("Введите цифрой четверть которую хотите увидеть: ")
+    await QuarterState.Quarter.set()
+    # quarter = call.message.text
 
 
+@dp.message_handler(state=QuarterState.Quarter)
+async def quarter_get(message: types.Message, state: FSMContext):
+    await state.update_data(quarter=message.text)
+    await message.answer("Постройка графика занимает от 2 до 3 минут, пожалуйста подождите.")
+
+    filename = f'Chemist{message.from_user.id}'
+
+    data = await state.get_data()
+
+    print(data)
+
+    chemist = CreateFile(select_user_data(855924622), int(data['quarter']), 'Химия', filename)
+    chemist.create_image()
+
+    path = Path(filename)
+
+    photo = InputFile(f'{path}.png')
+    await bot.send_photo(message.from_user.id, photo=photo)
+
+    await state.finish()
 
 if __name__ == '__main__':
     executor.start_polling(dp)

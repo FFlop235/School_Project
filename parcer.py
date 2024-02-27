@@ -8,13 +8,12 @@ import matplotlib.pyplot as plt
 
 options = Options()
 options.page_load_strategy = 'normal'
+options.headless = True
 
-driver = webdriver.Firefox(executable_path=r"C:\geckodriver\geckodriver.exe")
+driver = webdriver.Firefox(executable_path=r"C:\geckodriver\geckodriver.exe", options=options)
 
 URL = "https://sgo.prim-edu.ru/"
 
-driver.get(URL)
-time.sleep(13)
 
 user = {"login": "ГриммеМ", "password": "090508", "organisation": 'МБОУ "СОШ № 6"'}
 marks = 0
@@ -101,12 +100,18 @@ class Grafic:
 
 def sign_in(login:str, password:str, organisation:str):
 
+    driver.get(URL)
+    print("Получение ссылки: ", URL)
+    time.sleep(13)
+
     login_bar = driver.find_element(By.XPATH, """/html/body/div[1]/ng-view/main/div/div[3]/div[4]/input""")
     login_bar.send_keys(login)
+    print("Введение Логина: ", login)
     time.sleep(0.5)
-
+    
     password_bar = driver.find_element(By.XPATH, """/html/body/div[1]/ng-view/main/div/div[3]/div[5]/input""")
     password_bar.send_keys(password)
+    print("Введение Пароля: ", password)
     time.sleep(0.5)
 
     if organisation != 'МБОУ "СОШ № 6"':
@@ -125,6 +130,8 @@ def sign_in(login:str, password:str, organisation:str):
         org_serch_org = driver.find_element(By.XPATH, """/html/body/span/span/span[2]/ul/li[12]""")
         org_serch_org.click()
 
+        print("Выбор организации: ", organisation)
+
         time.sleep(2)
 
         enter_but = driver.find_element(By.XPATH, """/html/body/div[1]/ng-view/main/div/div[3]/div[7]""")
@@ -132,7 +139,7 @@ def sign_in(login:str, password:str, organisation:str):
 
         time.sleep(10)
 
-def con():
+def con(quarter: int):
 
     try:
         continue_button = driver.find_element(By.XPATH, """/html/body/div/div[1]/div/div/div[2]/div/div[4]/div/div/div/div/button[2]""")
@@ -151,15 +158,39 @@ def con():
         otchet_but = driver.find_element(By.XPATH, """/html/body/div/div[1]/div[4]/nav/ul/li[3]/a""")
         otchet_but.click()
 
+        print("Выбор отчёта")
+
     otchet_pos_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/table/tbody/tr[7]/td[2]/a""")
     otchet_pos_but.click()
 
-    time.sleep(3)
+    time.sleep(7)
+
+    match quarter:
+        
+        case 1:
+            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[1]""")
+
+        case 2:
+            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[2]""")
+
+        case 3:
+            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[3]""")
+
+        case 4:
+            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[4]""")
+
+        case _:
+            raise ValueError("Invalid Data")
+    
+    quarter_but.click()
+    print("Выбор четверти: ", quarter)
 
 def table_parcer():
     time.sleep(40)
     form_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[2]/div/div/div/button[1]""")
     form_but.click()
+
+    print("Парсинг таблицы")
 
     time.sleep(10)
 
@@ -170,6 +201,8 @@ def table_parcer():
     marks = pd.read_html(str(table))
     marks = pd.DataFrame(marks[0])
 
+    print("Вывод оценок")
+
     return marks
     # marks.to_csv('marks.csv')
 
@@ -177,7 +210,7 @@ def table_parcer():
 
 if __name__ == "__main__":
     sign_in(user["login"], user["password"], user["organisation"])
-    con()
-    grf = Grafic(name = 'Оценки по Физкультуре за III четверть', table_marks=table_parcer(), num_subject=15, f_mounth_name='Январь', s_mounth_name='Февраль')
+    con(2)
+    grf = Grafic(name = 'Оценки по Физике за II четверть', table_marks=table_parcer(), num_subject=10, f_mounth_name='Ноябрь', s_mounth_name='Декабрь')
     f, s = grf.table_filter()
     grf.save_image(filename='grf2.png', figure=grf.create_grafic(f, s))
