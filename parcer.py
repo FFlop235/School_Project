@@ -19,13 +19,13 @@ user = {"login": "ГриммеМ", "password": "090508", "organisation": 'МБО
 marks = 0
 
 class Grafic:
-    def __init__(self, name: str, table_marks: pd.DataFrame, num_subject: int, f_mounth_name: str, s_mounth_name: str)  -> None:
+    def __init__(self, name: str, table_marks: pd.DataFrame, num_subject: int, f_mounth_name: str, s_mounth_name: str, t_mounth_name: str=None)  -> None:
         self.name = name
         self.table_marks = table_marks
         self.num_subject = num_subject
         self.f_mounth_name = f_mounth_name
         self.s_mounth_name = s_mounth_name
-        # self.t_mounth_name = t_mounth_name
+        self.t_mounth_name = t_mounth_name
 
     def table_filter(self) -> pd.DataFrame:
         subject = pd.Series(self.table_marks.loc[self.num_subject])
@@ -41,58 +41,58 @@ class Grafic:
         f_mounth = f_mounth.loc[f_mounth[self.num_subject] != 'Н']
         f_mounth = f_mounth[self.num_subject].astype(int)
 
-        # if self.t_mounth_name != None:
-        #     t_mounth = pd.DataFrame(subject.loc[self.t_mounth_name])
-        #     t_mounth = t_mounth.loc[t_mounth[self.num_subject] != 'УП']
-        #     t_mounth = t_mounth.loc[t_mounth[self.num_subject] != 'Н']
-        #     t_mounth = t_mounth[self.num_subject].astype(int)
+        if self.t_mounth_name != None:
+            t_mounth = pd.DataFrame(subject.loc[self.t_mounth_name])
+            t_mounth = t_mounth.loc[t_mounth[self.num_subject] != 'УП']
+            t_mounth = t_mounth.loc[t_mounth[self.num_subject] != 'Н']
+            t_mounth = t_mounth[self.num_subject].astype(int)
 
-        #     return f_mounth, s_mounth, t_mounth
+            return f_mounth, s_mounth, t_mounth
             
         return f_mounth, s_mounth
     
-    def create_grafic(self, f_mounth: pd.DataFrame, s_mounth: pd.DataFrame) -> plt.Figure:
-        # if t_mounth == None:
-        fig, axs = plt.subplots(ncols=2, figsize=(11, 4))
+    def create_grafic(self, f_mounth: pd.DataFrame, s_mounth: pd.DataFrame, t_mounth) -> plt.Figure:
+        if type(t_mounth) != pd.DataFrame:
+            fig, axs = plt.subplots(ncols=2, figsize=(11, 4))
 
-        fig.suptitle(self.name)
+            fig.suptitle(self.name)
 
-        axs[0].plot(f_mounth, marker='o')
-        axs[1].plot(s_mounth, marker='o')
+            axs[0].plot(f_mounth, marker='o')
+            axs[1].plot(s_mounth, marker='o')
 
-        axs[0].grid(True)
-        axs[1].grid(True)
+            axs[0].grid(True)
+            axs[1].grid(True)
 
-        axs[0].set_xlabel(self.f_mounth_name)
-        axs[1].set_xlabel(self.s_mounth_name)
+            axs[0].set_xlabel(self.f_mounth_name)
+            axs[1].set_xlabel(self.s_mounth_name)
 
-        axs[0].set_yticks([2, 3, 4, 5])
-        axs[1].set_yticks([2, 3, 4, 5])
+            axs[0].set_yticks([2, 3, 4, 5])
+            axs[1].set_yticks([2, 3, 4, 5])
 
-        return fig
+            return fig
         
-        # else:
-            # fig, axs = plt.subplots(ncols=3, figsize=(10, 3))
+        else:
+            fig, axs = plt.subplots(ncols=3, figsize=(11, 4))
 
-            # fig.suptitle(self.name)
+            fig.suptitle(self.name)
 
-            # axs[0].plot(f_mounth, marker='o')
-            # axs[1].plot(s_mounth, marker='o')
-            # axs[2].plot(t_mounth, marker='o')
+            axs[0].plot(f_mounth, marker='o')
+            axs[1].plot(s_mounth, marker='o')
+            axs[2].plot(t_mounth, marker='o')
 
-            # axs[0].grid(True)
-            # axs[1].grid(True)
-            # axs[2].grid(True)
+            axs[0].grid(True)
+            axs[1].grid(True)
+            axs[2].grid(True)
 
-            # axs[0].set_xlabel(self.f_mounth_name)
-            # axs[1].set_xlabel(self.s_mounth_name)
-            # axs[2].set_xlabel(self.t_mounth_name)
+            axs[0].set_xlabel(self.f_mounth_name)
+            axs[1].set_xlabel(self.s_mounth_name)
+            axs[2].set_xlabel(self.t_mounth_name)
 
-            # axs[0].set_yticks([2, 3, 4, 5])
-            # axs[1].set_yticks([2, 3, 4, 5])
-            # axs[2].set_yticks([2, 3, 4, 5])
+            axs[0].set_yticks([2, 3, 4, 5])
+            axs[1].set_yticks([2, 3, 4, 5])
+            axs[2].set_yticks([2, 3, 4, 5])
 
-            # return fig
+            return fig
     
     def save_image(self, filename: str, figure: plt.Figure) -> None:
         figure.savefig(filename)
