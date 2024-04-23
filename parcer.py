@@ -5,12 +5,17 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from selenium.webdriver.firefox.options import Options
 import matplotlib.pyplot as plt
+import os
 
 options = Options()
 options.page_load_strategy = 'normal'
 options.headless = True
 
-driver = webdriver.Firefox(executable_path=r"C:\geckodriver\geckodriver.exe", options=options)
+# os.environ['MOZ_HEADLESS'] = '1'
+
+# executable_path=r"C:\geckodriver\geckodriver.exe"
+
+driver = webdriver.Firefox(options=options)
 
 URL = "https://sgo.prim-edu.ru/"
 
@@ -51,7 +56,7 @@ class Grafic:
             
         return f_mounth, s_mounth
     
-    def create_grafic(self, f_mounth: pd.DataFrame, s_mounth: pd.DataFrame, t_mounth) -> plt.Figure:
+    def create_grafic(self, f_mounth: pd.DataFrame, s_mounth: pd.DataFrame, t_mounth=None) -> plt.Figure:
         if type(t_mounth) != pd.DataFrame:
             fig, axs = plt.subplots(ncols=2, figsize=(11, 4))
 
@@ -142,7 +147,7 @@ def sign_in(login:str, password:str, organisation:str):
 def con(quarter: int):
 
     try:
-        continue_button = driver.find_element(By.XPATH, """/html/body/div/div[1]/div/div/div[2]/div/div[4]/div/div/div/div/button[2]""")
+        continue_button = driver.find_element(By.XPATH, """/html/body/div[3]/div/div/ns-modal/div/div[3]/div/div/button""")
         continue_button.click()
 
         print("Продолжение было")
@@ -155,29 +160,29 @@ def con(quarter: int):
         time.sleep(7)
 
     finally:
-        otchet_but = driver.find_element(By.XPATH, """/html/body/div/div[1]/div[4]/nav/ul/li[3]/a""")
+        otchet_but = driver.find_element(By.XPATH, """//html/body/app-component/div[1]/div[3]/div/app-menu/nav/ul/li[3]/a""")
         otchet_but.click()
 
         print("Выбор отчёта")
+    
+    time.sleep(2)
 
-    otchet_pos_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/table/tbody/tr[7]/td[2]/a""")
+    otchet_pos_but = driver.find_element(By.XPATH, """/html/body/app-component/div[2]/div[2]/div/div/div/div/div/table/tbody/tr[7]/td[2]/a""")
     otchet_pos_but.click()
 
     time.sleep(7)
 
     match quarter:
-        
         case 1:
-            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[1]""")
-
+            quarter_but = driver.find_element(By.XPATH, """/html/body/app-component/div[2]/div[2]/div/div/div/div/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[2]""")
         case 2:
-            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[2]""")
+            quarter_but = driver.find_element(By.XPATH, """/html/body/app-component/div[2]/div[2]/div/div/div/div/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[3]""")
 
         case 3:
-            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[3]""")
+            quarter_but = driver.find_element(By.XPATH, """/html/body/app-component/div[2]/div[2]/div/div/div/div/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[4]""")
 
         case 4:
-            quarter_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[4]""")
+            quarter_but = driver.find_element(By.XPATH, """/html/body/app-component/div[2]/div[2]/div/div/div/div/div/div[2]/div[1]/div[1]/form/div/filter-panel/div[3]/div/select/option[5]""")
 
         case _:
             raise ValueError("Invalid Data")
@@ -187,7 +192,7 @@ def con(quarter: int):
 
 def table_parcer():
     time.sleep(40)
-    form_but = driver.find_element(By.XPATH, """/html/body/div/div[2]/div[1]/div/div/div/div[2]/div/div[2]/div[2]/div/div/div/button[1]""")
+    form_but = driver.find_element(By.XPATH, """/html/body/app-component/div[2]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div/button[1]""")
     form_but.click()
 
     print("Парсинг таблицы")

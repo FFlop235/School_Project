@@ -52,14 +52,4 @@ def save_changes() -> None:
     connection.close()
 
 if __name__ == "__main__":
-    print(select_id())
-
-    # create_user_data(145, 'ff', 'hgj8')
-    # create_user_data(789, 'gg', '7ghd')
-    # create_user_data(435, 'aa', 'jgl8')
-
-    # save_changes()
-
-    # print(select_user_data(855924622))
-    # delete_user_data(855924622)
-    # save_changes()
+    print(f"Файл {__name__}")

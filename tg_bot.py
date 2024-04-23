@@ -6,16 +6,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InputFile 
 
-from DataBase import create_user_data, update_user_data, delete_user_data, select_user_data, select_id, save_changes
+from DataBase import create_user_data, select_user_data, select_id, save_changes
 from sup import CreateFile
-from sup import kb_subject
 
 from pathlib import Path
 
-import json
 import logging
-
-import time
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,11 +26,6 @@ class UserState(StatesGroup):
     login = State()
     password = State()
 
-# ! Очень плохой костыль надо срочно убирать
-
-# class QuarterState(StatesGroup):
-#     Quarter = State()
-
 class SubjectState(StatesGroup):
     Subject = State()
     Quarter = State()
@@ -42,11 +33,11 @@ class SubjectState(StatesGroup):
 # * Кнопочки
 
 btn_reg = InlineKeyboardButton('Зарегистрироватся', callback_data='reg')
-btn_continue = InlineKeyboardButton('Продолжить', callback_data='continue1')
+btn_continue = InlineKeyboardButton('Главное меню', callback_data='continue1')
 btn_yes = InlineKeyboardButton('Да', callback_data='yes')
-btn_no = InlineKeyboardButton('Нет', callback_data='no2')
+btn_no = InlineKeyboardButton('Нет', callback_data='no')
 btn_yes2 = InlineKeyboardButton('Да', callback_data='yes2')
-btn_no2 = InlineKeyboardButton('Нет', callback_data='no')
+btn_no2 = InlineKeyboardButton('Нет', callback_data='no2')
 btn_to_subject_list = InlineKeyboardButton('Предметы', callback_data="subject_list")
 
 # * Клавиатурки
@@ -58,6 +49,7 @@ kb_start = InlineKeyboardMarkup().add(btn_reg).add(btn_continue)
 kb_continue_to_main_menu = InlineKeyboardMarkup().add(btn_continue).add(btn_to_subject_list)
 kb_reg = InlineKeyboardMarkup().add(btn_reg)
 kb_subject_list = InlineKeyboardMarkup().add(btn_to_subject_list)
+kb_retry = InlineKeyboardMarkup().add(btn_continue).add(btn_to_subject_list)
 
 # ? Старт
 
@@ -118,27 +110,32 @@ async def select_quarter(message: types.Message, state: FSMContext):
 
     await state.reset_state(with_data=False)
 
-
-
 @dp.callback_query_handler(text='yes2')
 async def yes2(call: types.CallbackQuery, state: FSMContext):
-    await call.message.delete()
-    data = await state.get_data()
-    await call.message.answer("Постройка графика занимает от 2 до 3 минут, пожалуйста подождите.")
+    try:
+        await call.message.delete()
+        data = await state.get_data()
+        await call.message.answer("Постройка графика занимает от 2 до 3 минут, пожалуйста подождите.")
 
-    filename = f'{data["subject"]}_{data["quarter"]}{call.from_user.id}'
+        filename = f'{data["subject"]}_{data["quarter"]}{call.from_user.id}'
 
-    data = await state.get_data()
+        data = await state.get_data()
 
-    print(data)
+        print(data)
 
-    subject = CreateFile(select_user_data(call.from_user.id), int(data['quarter']), data["subject"], filename)
-    subject.create_image()
+        subject = CreateFile(select_user_data(call.from_user.id), int(data['quarter']), data["subject"], filename)
+        subject.create_image()
 
-    path = Path(filename)
+        path = Path(filename)
 
-    photo = InputFile(f'{path}.png')
-    await bot.send_photo(call.from_user.id, photo=photo)
+        photo = InputFile(f'{path}.png')
+        await bot.send_photo(call.from_user.id, photo=photo)
+    
+    except Exception:
+        await call.message.answer("Извините, что то пошло не так. Сбой может быть связан со следующими причинами: \n 1.Сбой сетевого города \n 2.Не стабильное или медленное подключение к интернету \n 3. Невозможно вывести график по данному предмету")
+        await call.message.answer("Попробуйте ещё раз позже", reply_markup=kb_retry)
+
+
 
     await state.finish()
 
@@ -148,8 +145,6 @@ async def no2(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer("Нажмите на кнопку ниже, чтобы изменить предмет.", reply_markup=kb_subject_list)
 
     await state.finish()
-
-
 
 
 @dp.callback_query_handler(text=['reg'])
@@ -198,7 +193,6 @@ async def call_yes(call: types.CallbackQuery, state: FSMContext):
     await state.finish()
 
 
-
 @dp.callback_query_handler(text='chemist')
 async def call_chemist(call: types.CallbackQuery):
     await call.message.delete()
@@ -206,29 +200,6 @@ async def call_chemist(call: types.CallbackQuery):
     quarter = 2
     await call.message.answer(quarter)
     print(quarter, type(quarter))
-
-# ! КОСТЫЛЬ
-
-# @dp.message_handler(state=QuarterState.Quarter)
-# async def quarter_get(message: types.Message, state: FSMContext):
-#     await state.update_data(quarter=message.text)
-#     await message.answer("Постройка графика занимает от 2 до 3 минут, пожалуйста подождите.")
-
-#     filename = f'Chemist{message.from_user.id}'
-
-#     data = await state.get_data()
-
-#     print(data)
-
-#     chemist = CreateFile(select_user_data(855924622), int(data['quarter']), 'Химия', filename)
-#     chemist.create_image()
-
-#     path = Path(filename)
-
-#     photo = InputFile(f'{path}.png')
-#     await bot.send_photo(message.from_user.id, photo=photo)
-
-#     await state.finish()
 
 if __name__ == '__main__':
     executor.start_polling(dp)

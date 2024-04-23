@@ -3,24 +3,6 @@ from parcer import sign_in, con, table_parcer
 from parcer import Grafic
 from DataBase import select_user_data
 
-
-btn_chemist = InlineKeyboardButton('Химия', callback_data='chemist')
-btn_history = InlineKeyboardButton('История', callback_data='history')
-btn_phisics = InlineKeyboardButton('Физика', callback_data='phisics')
-btn_rus_language = InlineKeyboardButton('Русский язык', callback_data='rus_language')
-btn_eng_language = InlineKeyboardButton('Английский язык', callback_data='eng_language')
-btn_inf = InlineKeyboardButton('Информатика', callback_data='inf')
-btn_geometry = InlineKeyboardButton('Геометрия', callback_data='geometry')
-btn_literature = InlineKeyboardButton('Литература', callback_data='literature')
-btn_technolagy = InlineKeyboardButton('Технология', callback_data='technolagy')
-btn_biology = InlineKeyboardButton('Биология', callback_data='biology')
-btn_geografy = InlineKeyboardButton('География', callback_data='geografy')
-btn_soc_science = InlineKeyboardButton('Обществознание', callback_data='soc_science')
-btn_BOLS = InlineKeyboardButton('ОБЖ', callback_data='BOLS')
-btn_PC = InlineKeyboardButton("Физкультура", callback_data='PC')
-btn_algebra = InlineKeyboardButton("Алгебра", callback_data='algebra')
-kb_subject = InlineKeyboardMarkup().add(btn_chemist).add(btn_history).add(btn_phisics).add(btn_rus_language).add(btn_eng_language).add(btn_inf).add(btn_geometry).add(btn_literature).add(btn_technolagy).add(btn_biology).add(btn_geografy).add(btn_soc_science).add(btn_BOLS).add(btn_PC).add(btn_algebra).add(btn_algebra)
-
 def return_num_subject(subject_name: str) -> int:
     match subject_name:
         case 'Индивидуальный проект':
@@ -99,15 +81,6 @@ class CreateFile:
             grf = Grafic(name=f'Оценки по {self.subject_name} за {return_quarter_name(self.quarter)} четверть', table_marks=table_parcer(), num_subject=return_num_subject(self.subject_name), f_mounth_name=return_quarter(self.quarter)[0], s_mounth_name=return_quarter(self.quarter)[1], t_mounth_name=return_quarter(self.quarter)[2])
             f, s, t = grf.table_filter()
             grf.save_image(filename=self.filename, figure=grf.create_grafic(f, s, t))
-
-
-class SendFile:
-    def __init__(self, id: int, quarter: int, subject: str):
-        self.id = id
-        self.quarter = quarter
-        self.subject = subject
-
-
 
 if __name__ == '__main__':
     f1 = CreateFile(select_user_data(855924622), 3, 'Химия', 'test2.png')
