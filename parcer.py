@@ -125,12 +125,12 @@ def sign_in(login:str, password:str, organisation:str):
         org = 'МБОУ "СОШ № 6"'
         org_search_bar = driver.find_element(By.XPATH, """/html/body/div[1]/ng-view/main/div/div[3]/div[3]/div/span/span[1]/span""")
         org_search_bar.click()
-        time.sleep(1)
+        time.sleep(3)
 
         org_serch_bar_ch = driver.find_element(By.XPATH, """/html/body/span/span/span[1]/input""")
         org_serch_bar_ch.send_keys(org)
 
-        time.sleep(2)
+        time.sleep(3)
 
         org_serch_org = driver.find_element(By.XPATH, """/html/body/span/span/span[2]/ul/li[12]""")
         org_serch_org.click()
@@ -191,13 +191,13 @@ def con(quarter: int):
     print("Выбор четверти: ", quarter)
 
 def table_parcer():
-    time.sleep(40)
+    time.sleep(2)
     form_but = driver.find_element(By.XPATH, """/html/body/app-component/div[2]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div/button[1]""")
     form_but.click()
 
     print("Парсинг таблицы")
 
-    time.sleep(10)
+    time.sleep(15)
 
     html = driver.page_source
     soup = BeautifulSoup(html, "lxml")
