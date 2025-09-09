@@ -13,6 +13,8 @@ from pathlib import Path
 
 import logging
 
+p = 0
+
 logging.basicConfig(level=logging.INFO)
 
 storage = MemoryStorage()
